@@ -92,7 +92,7 @@ function App() {
   }, {} as Record<string, Product[]>);
 
   // Ordem desejada pelo usuário
-  const categoryOrder = ['Polpas', 'Biscoitos', 'Licores', 'Diversos'];
+  const categoryOrder = ['Polpas', 'Biscoitos', 'Licores', 'Sorvetes', 'Diversos'];
   
   // Pega todas as categorias existentes que não estão na ordem preferida e adiciona ao final
   const otherCategories = Object.keys(groupedProducts).filter(cat => !categoryOrder.includes(cat));

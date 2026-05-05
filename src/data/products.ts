@@ -76,6 +76,14 @@ export const products: Product[] = [
     category: 'Biscoitos',
     image: getImageUrl('especial de leite condensado.jpeg')
   },
+  {
+    id: 'beiju-coco',
+    name: 'Beiju de Coco',
+    description: 'Beiju artesanal feito com coco selecionado.',
+    price: 5.00, // Preço mantido como estava antes desta rodada
+    category: 'Diversos',
+    image: getImageUrl('beiju de coco.jpeg')
+  },
 
   // --- LICORES ---
   {
@@ -150,7 +158,7 @@ export const products: Product[] = [
     id: 'polpa-goiaba',
     name: 'Polpa de Goiaba',
     description: 'Polpa de goiaba selecionada.',
-    price: 5.0,
+    price: 5.00,
     category: 'Polpas',
     image: getImageUrl('polpa de goiaba.jpeg')
   },
@@ -189,7 +197,7 @@ export const products: Product[] = [
   {
     id: 'polpa-maracuja',
     name: 'Polpa de Maracujá',
-    description: 'Polpa de maracujá natural com sementes.',
+    description: 'Polpa de maracujá natural with seeds.',
     price: 8.00,
     category: 'Polpas',
     image: getImageUrl('polpa de maracujá.jpeg')
@@ -203,6 +211,50 @@ export const products: Product[] = [
     image: getImageUrl('polpa de tamarindo.jpeg')
   },
 
+  // --- SORVETES ---
+  {
+    id: 'sorvete-uva-1l',
+    name: 'Sorvete Natural de Uva (1 Litro)',
+    description: 'Sorvete 100% natural sabor uva, embalagem de 1 litro.',
+    price: 10.00,
+    category: 'Sorvetes',
+    image: getImageUrl('sorvete natual 1 litro de uva.jpeg')
+  },
+  {
+    id: 'sorvete-umbu-400ml',
+    name: 'Sorvete Natural de Umbu (400ml)',
+    description: 'Sorvete artesanal de umbu, sabor típico e refrescante.',
+    price: 4.00,
+    category: 'Sorvetes',
+    image: getImageUrl('Sorvete natural de umbu 400ml.jpeg')
+  },
+  {
+    id: 'sorvete-tamarindo-1l',
+    name: 'Sorvete Natural de Tamarindo (1 Litro)',
+    description: 'Sorvete 100% natural sabor tamarindo, embalagem de 1 litro.',
+    price: 10.00,
+    category: 'Sorvetes',
+    image: getImageUrl('sorvete natural 1 litro de tamarindo.jpeg')
+  },
+  {
+    id: 'sorvete-uva-400ml',
+    name: 'Sorvete Natural de Uva (400ml)',
+    description: 'Sorvete artesanal de uva feito com a fruta.',
+    price: 4.00,
+    category: 'Sorvetes',
+    image: getImageUrl('Sorvete natural de uva 400ml.jpeg')
+  },
+  {
+    id: 'sorvete-morango-400ml',
+    name: 'Sorvete Natural de Morango (400ml)',
+    description: 'Sorvete artesanal de morango 100% natural.',
+    price: 0.00, // Ajustar preço
+    category: 'Sorvetes',
+    image: getImageUrl('sorvete natural de morango 400ml.jpeg'),
+    featured: true
+  },
+
+
   // --- DIVERSOS ---
   {
     id: 'farinha',
@@ -211,6 +263,14 @@ export const products: Product[] = [
     price: 7.00,
     category: 'Diversos',
     image: getImageUrl('farinha.jpeg')
+  },
+  {
+    id: 'farinha-copioba',
+    name: 'Farinha de Copioba',
+    description: 'Farinha de copioba autêntica, qualidade premium.',
+    price: 10.00,
+    category: 'Diversos',
+    image: getImageUrl('Farinha de copioba.jpeg')
   },
   {
     id: 'tapioca-crocante',
