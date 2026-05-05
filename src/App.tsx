@@ -68,6 +68,9 @@ function App() {
     }
 
     let paymentInfo = `*Pagamento:* ${checkoutData.paymentMethod.toUpperCase()}`;
+    if (checkoutData.paymentMethod === 'card' && checkoutData.cardType) {
+      paymentInfo += ` (${checkoutData.cardType.charAt(0).toUpperCase() + checkoutData.cardType.slice(1)})`;
+    }
     if (checkoutData.paymentMethod === 'cash' && checkoutData.changeFor) {
       paymentInfo += ` (Troco para ${checkoutData.changeFor})`;
     }

@@ -15,6 +15,7 @@ export interface CheckoutData {
   neighborhood: string;
   number: string;
   paymentMethod: 'pix' | 'card' | 'cash';
+  cardType?: 'debito' | 'credito';
   changeFor?: string;
 }
 
@@ -26,6 +27,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
     neighborhood: '',
     number: '',
     paymentMethod: 'pix',
+    cardType: 'debito',
     changeFor: ''
   });
 
@@ -138,6 +140,28 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
               </button>
             </div>
           </div>
+
+          {data.paymentMethod === 'card' && (
+            <div className="form-section">
+              <label>Tipo de Cartão</label>
+              <div className="toggle-group">
+                <button 
+                  type="button" 
+                  className={data.cardType === 'debito' ? 'active' : ''}
+                  onClick={() => setData({...data, cardType: 'debito'})}
+                >
+                  Débito
+                </button>
+                <button 
+                  type="button" 
+                  className={data.cardType === 'credito' ? 'active' : ''}
+                  onClick={() => setData({...data, cardType: 'credito'})}
+                >
+                  Crédito
+                </button>
+              </div>
+            </div>
+          )}
 
           {data.paymentMethod === 'cash' && (
             <div className="form-section">

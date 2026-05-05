@@ -716,6 +716,7 @@ body {
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
   animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box; /* Garante que a borda e o padding não aumentem a largura */
 }
 
 @keyframes modalPop {
@@ -756,6 +757,7 @@ body {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+  box-sizing: border-box; /* Garante que o preenchimento não empurre a caixa para fora */
 }
 
 .form-section {
@@ -778,6 +780,8 @@ body {
   font-size: 1rem;
   background: var(--bg-main);
   transition: all 0.2s;
+  color: #000000; /* Força a cor preta para o texto digitado */
+  box-sizing: border-box; /* Garante que a largura total seja respeitada */
 }
 
 .form-section input:focus {
@@ -822,10 +826,18 @@ body {
 .address-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .field-full { grid-column: span 2; }
+.field-half { grid-column: span 1; }
+
+@media (max-width: 480px) {
+  .address-grid {
+    grid-template-columns: 1fr;
+  }
+  .field-full, .field-half { grid-column: span 1; }
+}
 
 .modal-footer {
   padding: 24px;
