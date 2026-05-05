@@ -588,6 +588,7 @@ body {
     width: 100%;
     max-width: 400px;
     height: 100vh;
+    height: 100dvh; /* Altura dinâmica para mobile */
     z-index: 2000;
     transition: right 0.3s ease;
     padding: 0;
@@ -600,12 +601,19 @@ body {
 
   .cart-container {
     height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
     border-radius: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .cart-footer {
-    padding: 24px 20px 40px 20px; /* Mais espaço no fundo para mobile */
+    padding: 20px 20px 60px 20px; /* Aumentei ainda mais o espaço no fundo */
+    background: white;
+    border-top: 1px solid var(--border-light);
+    flex-shrink: 0;
   }
 
   .close-cart-btn {
