@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { ShoppingBag, User, Search, MapPin, Clock, Plus, Minus, X } from 'lucide-react';
 import { products } from './data/products';
 import { CategoryFilter } from './components/CategoryFilter';
-import { CheckoutModal } from './components/CheckoutModal';
-import type { CheckoutData } from './components/CheckoutModal';
 import type { Product } from './types';
 import logoImg from '../imagens para usar no projeto/logotipo.png';
 import './App.css';
@@ -22,7 +20,6 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Sincroniza o carrinho com o localStorage sempre que ele mudar
   useEffect(() => {
@@ -55,31 +52,13 @@ function App() {
 
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-  const handleCheckoutSubmit = (checkoutData: CheckoutData) => {
+  const sendWhatsApp = () => {
     if (cart.length === 0) return;
 
-    const itemsMessage = cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
-    
-    let deliveryInfo = '';
-    if (checkoutData.deliveryMethod === 'delivery') {
-      deliveryInfo = `*Entrega:* ${checkoutData.address}, nº ${checkoutData.number}, ${checkoutData.neighborhood}`;
-    } else {
-      deliveryInfo = `*Retirada:* Retirada no estabelecimento`;
-    }
-
-    let paymentInfo = `*Pagamento:* ${checkoutData.paymentMethod.toUpperCase()}`;
-    if (checkoutData.paymentMethod === 'cash' && checkoutData.changeFor) {
-      paymentInfo += ` (Troco para ${checkoutData.changeFor})`;
-    }
-
-    const customerInfo = `*Cliente:* ${checkoutData.name}%0A${deliveryInfo}%0A${paymentInfo}`;
+    const message = cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
     const total = `%0A%0A*Total: R$ ${cartTotal.toFixed(2)}*`;
-    
     const phoneNumber = '5571993171586'; 
-    const fullMessage = `Olá, gostaria de fazer um pedido na *Deliciosos Sabores do Campo*:%0A%0A${customerInfo}%0A%0A*Itens:*%0A${itemsMessage}${total}`;
-    
-    window.open(`https://wa.me/${phoneNumber}?text=${fullMessage}`, '_blank');
-    setIsCheckoutOpen(false);
+    window.open(`https://wa.me/${phoneNumber}?text=Olá, gostaria de fazer um pedido na *Deliciosos Sabores do Campo*:%0A%0A${message}${total}`, '_blank');
   };
 
   const groupedProducts = products.reduce((acc, product) => {
@@ -311,25 +290,17 @@ function App() {
                     <span>{cartTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                   </div>
                 </div>
-                <button className="checkout-btn" onClick={() => setIsCheckoutOpen(true)}>
+                <button className="checkout-btn" onClick={sendWhatsApp}>
                   Finalizar Pedido <ShoppingBag size={20} />
                 </button>
-                </div>
-                )}
-                </div>
-                </aside>
-                </main>
+              </div>
+            )}
+          </div>
+        </aside>
+      </main>
 
-                <CheckoutModal 
-                isOpen={isCheckoutOpen}
-                onClose={() => setIsCheckoutOpen(false)}
-                onSubmit={handleCheckoutSubmit}
-                total={cartTotal}
-                />
-
-                {cart.length > 0 && (
-                <button className="mobile-cart-fab" onClick={() => setIsCartOpen(true)}>
-
+      {cart.length > 0 && (
+        <button className="mobile-cart-fab" onClick={() => setIsCartOpen(true)}>
           <div className="fab-icon-wrapper">
             <ShoppingBag size={24} />
             <span className="fab-count">{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>
