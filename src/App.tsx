@@ -58,7 +58,7 @@ function App() {
     const message = cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
     const total = `%0A%0A*Total: R$ ${cartTotal.toFixed(2)}*`;
     const phoneNumber = '5571993171586'; 
-    window.open(`https://wa.me/${phoneNumber}?text=Olá, gostaria de fazer um pedido em Sabores do Campo:%0A%0A${message}${total}`, '_blank');
+    window.open(`https://wa.me/${phoneNumber}?text=Olá, gostaria de fazer um pedido na *Deliciosos Sabores do Campo*:%0A%0A${message}${total}`, '_blank');
   };
 
   const groupedProducts = products.reduce((acc, product) => {
@@ -245,20 +245,33 @@ function App() {
               ) : (
                 cart.map(item => (
                   <div key={item.id} className="cart-item">
-                    <div className="item-details">
-                      <h4>{item.name}</h4>
-                      <span className="item-price">
-                        {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} un
-                      </span>
+                    <div className="cart-item-image">
+                      <img src={item.image} alt={item.name} />
                     </div>
-                    <div className="item-actions">
-                      <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}>
-                        <Minus size={14} />
-                      </button>
-                      <span className="item-qty">{item.quantity}</span>
-                      <button className="qty-btn" onClick={() => updateQuantity(item.id, 1)}>
-                        <Plus size={14} />
-                      </button>
+                    
+                    <div className="cart-item-info">
+                      <div className="cart-item-header">
+                        <h4>{item.name}</h4>
+                        <span className="cart-item-total-price">
+                          {(item.price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                      </div>
+                      
+                      <div className="cart-item-details">
+                        <span className="cart-item-unit-price">
+                          {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / un
+                        </span>
+                        
+                        <div className="item-actions">
+                          <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}>
+                            <Minus size={14} />
+                          </button>
+                          <span className="item-qty">{item.quantity}</span>
+                          <button className="qty-btn" onClick={() => updateQuantity(item.id, 1)}>
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
