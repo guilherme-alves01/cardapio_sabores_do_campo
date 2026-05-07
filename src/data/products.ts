@@ -218,7 +218,7 @@ export const products: Product[] = [
     id: 'sorvete-uva-1l',
     name: 'Sorvete Natural de Uva (1 Litro)',
     description: 'Sorvete 100% natural sabor uva, embalagem de 1 litro.',
-    price: 15.00,
+    price: 13.00,
     category: 'Sorvetes',
     image: getImageUrl('sorvete natual 1 litro de uva.jpeg')
   },
@@ -234,7 +234,7 @@ export const products: Product[] = [
     id: 'sorvete-tamarindo-1l',
     name: 'Sorvete Natural de Tamarindo (1 Litro)',
     description: 'Sorvete 100% natural sabor tamarindo, embalagem de 1 litro.',
-    price: 15.00,
+    price: 13.00,
     category: 'Sorvetes',
     image: getImageUrl('sorvete natural 1 litro de tamarindo.jpeg')
   },
