@@ -246,17 +246,6 @@ export const products: Product[] = [
     category: 'Sorvetes',
     image: getImageUrl('Sorvete natural de uva 400ml.jpeg')
   },
-  {
-    id: 'sorvete-morango-400ml',
-    name: 'Sorvete Natural de Morango (400ml)',
-    description: 'Sorvete artesanal de morango 100% natural.',
-    price: 5.00, // Ajustar preço
-    category: 'Sorvetes',
-    image: getImageUrl('sorvete natural de morango 400ml.jpeg'),
-    featured: true
-  },
-
-
   // --- DIVERSOS ---
   {
     id: 'farinha',
