@@ -18,7 +18,7 @@ function App() {
     const savedCart = localStorage.getItem('sabores-do-campo-cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -59,7 +59,7 @@ function App() {
     if (cart.length === 0) return;
 
     const itemsMessage = cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
-    
+
     let deliveryInfo = '';
     if (checkoutData.deliveryMethod === 'delivery') {
       deliveryInfo = `*Entrega:* ${checkoutData.address}, nº ${checkoutData.number}, ${checkoutData.neighborhood}`;
@@ -77,10 +77,10 @@ function App() {
 
     const customerInfo = `*Cliente:* ${checkoutData.name}%0A${deliveryInfo}%0A${paymentInfo}`;
     const total = `%0A%0A*Total: R$ ${cartTotal.toFixed(2)}*`;
-    
-    const phoneNumber = '5571993171586'; 
+
+    const phoneNumber = '5571993171586';
     const fullMessage = `Olá, gostaria de fazer um pedido na *Deliciosos Sabores do Campo*:%0A%0A${customerInfo}%0A%0A*Itens:*%0A${itemsMessage}${total}`;
-    
+
     window.open(`https://wa.me/${phoneNumber}?text=${fullMessage}`, '_blank');
     setIsCheckoutOpen(false);
   };
@@ -93,7 +93,7 @@ function App() {
 
   // Ordem desejada pelo usuário
   const categoryOrder = ['Polpas', 'Biscoitos', 'Licores', 'Sorvetes', 'Diversos'];
-  
+
   // Pega todas as categorias existentes que não estão na ordem preferida e adiciona ao final
   const otherCategories = Object.keys(groupedProducts).filter(cat => !categoryOrder.includes(cat));
   const finalCategoryOrder = [...categoryOrder.filter(cat => groupedProducts[cat]), ...otherCategories];
@@ -141,7 +141,7 @@ function App() {
           {/* Header Compacto com Info da Loja */}
           <div className="compact-header">
             <div className="header-top-row">
-              <h1>Produtos orgânicos</h1>
+              <h1>Produtos naturais</h1>
               <span className={`badge ${isOpen ? 'badge-open' : 'badge-closed'}`}>
                 {isOpen ? 'Aberto agora' : 'Fechado agora'}
               </span>
@@ -162,9 +162,9 @@ function App() {
 
           {/* Filtros e Busca */}
           <div className="controls-wrapper" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
-            <CategoryFilter 
-              selectedCategory={selectedCategory} 
-              onSelectCategory={scrollToCategory} 
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onSelectCategory={scrollToCategory}
               categories={filterCategories}
             />
             <div className="search-bar" style={{ width: '100%' }}>
@@ -183,43 +183,43 @@ function App() {
             p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.description.toLowerCase().includes(searchQuery.toLowerCase())
           )).length > 0 && (
-            <section>
-              <h2 className="section-heading">Destaques</h2>
-              <div className="products-grid">
-                {products
-                  .filter(p => p.featured && (
-                    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    p.description.toLowerCase().includes(searchQuery.toLowerCase())
-                  ))
-                  .map(product => (
-                    <div key={product.id} className="product-card">
-                      <div className="product-image-container">
-                        <img src={product.image} alt={product.name} className="product-image" />
-                      </div>
-                      <div className="product-info">
-                        <h3>{product.name}</h3>
-                        <p className="product-description">{product.description}</p>
-                        <div className="product-footer">
-                          <span className="product-price">
-                            {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                          </span>
-                          <button className="add-btn" onClick={() => addToCart(product)}>
-                            <Plus size={20} />
-                          </button>
+              <section>
+                <h2 className="section-heading">Destaques</h2>
+                <div className="products-grid">
+                  {products
+                    .filter(p => p.featured && (
+                      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.description.toLowerCase().includes(searchQuery.toLowerCase())
+                    ))
+                    .map(product => (
+                      <div key={product.id} className="product-card">
+                        <div className="product-image-container">
+                          <img src={product.image} alt={product.name} className="product-image" />
+                        </div>
+                        <div className="product-info">
+                          <h3>{product.name}</h3>
+                          <p className="product-description">{product.description}</p>
+                          <div className="product-footer">
+                            <span className="product-price">
+                              {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </span>
+                            <button className="add-btn" onClick={() => addToCart(product)}>
+                              <Plus size={20} />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-              </div>
-            </section>
-          )}
+                    ))}
+                </div>
+              </section>
+            )}
 
           {/* Produtos Agrupados por Categoria na Ordem Correta */}
           {finalCategoryOrder.map(category => {
             const categoryProducts = groupedProducts[category];
             if (!categoryProducts) return null;
 
-            const filtered = categoryProducts.filter(product => 
+            const filtered = categoryProducts.filter(product =>
               product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               product.description.toLowerCase().includes(searchQuery.toLowerCase())
             );
@@ -282,7 +282,7 @@ function App() {
                     <div className="cart-item-image">
                       <img src={item.image} alt={item.name} />
                     </div>
-                    
+
                     <div className="cart-item-info">
                       <div className="cart-item-header">
                         <h4>{item.name}</h4>
@@ -290,12 +290,12 @@ function App() {
                           {(item.price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </span>
                       </div>
-                      
+
                       <div className="cart-item-details">
                         <span className="cart-item-unit-price">
                           {item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / un
                         </span>
-                        
+
                         <div className="item-actions">
                           <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}>
                             <Minus size={14} />
@@ -327,21 +327,21 @@ function App() {
                 <button className="checkout-btn" onClick={() => setIsCheckoutOpen(true)}>
                   Finalizar Pedido <ShoppingBag size={20} />
                 </button>
-                </div>
-                )}
-                </div>
-                </aside>
-                </main>
+              </div>
+            )}
+          </div>
+        </aside>
+      </main>
 
-                <CheckoutModal 
-                isOpen={isCheckoutOpen}
-                onClose={() => setIsCheckoutOpen(false)}
-                onSubmit={handleCheckoutSubmit}
-                total={cartTotal}
-                />
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onSubmit={handleCheckoutSubmit}
+        total={cartTotal}
+      />
 
-                {cart.length > 0 && (
-                <button className="mobile-cart-fab" onClick={() => setIsCartOpen(true)}>
+      {cart.length > 0 && (
+        <button className="mobile-cart-fab" onClick={() => setIsCartOpen(true)}>
 
           <div className="fab-icon-wrapper">
             <ShoppingBag size={24} />
