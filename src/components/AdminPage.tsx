@@ -133,8 +133,62 @@ export function AdminPage() {
 
   const uploadImage = async () => {
     if (!supabase || !imageFile) return '';
-    const path = `products/${Date.now()}-${getSafeFileName(imageFile.name)}`;
-    const { error } = await supabase.storage.from('product-images').upload(path, imageFile);
+    const normalizedImage = await new Promise<{ body: Blob; contentType: string; extension: string }>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth || image.width;
+          canvas.height = image.naturalHeight || image.height;
+          const context = canvas.getContext('2d');
+          if (!context) {
+            resolve({
+              body: imageFile,
+              contentType: imageFile.type || 'application/octet-stream',
+              extension: getSafeFileName(imageFile.name).split('.').pop() || 'jpg',
+            });
+            return;
+          }
+
+          context.drawImage(image, 0, 0);
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              resolve({
+                body: imageFile,
+                contentType: imageFile.type || 'application/octet-stream',
+                extension: getSafeFileName(imageFile.name).split('.').pop() || 'jpg',
+              });
+              return;
+            }
+
+            resolve({ body: blob, contentType: 'image/jpeg', extension: 'jpg' });
+          }, 'image/jpeg', 0.92);
+        };
+        image.onerror = () => {
+          resolve({
+            body: imageFile,
+            contentType: imageFile.type || 'application/octet-stream',
+            extension: getSafeFileName(imageFile.name).split('.').pop() || 'jpg',
+          });
+        };
+        image.src = String(reader.result || '');
+      };
+      reader.onerror = () => {
+        resolve({
+          body: imageFile,
+          contentType: imageFile.type || 'application/octet-stream',
+          extension: getSafeFileName(imageFile.name).split('.').pop() || 'jpg',
+        });
+      };
+      reader.readAsDataURL(imageFile);
+    });
+
+    const fileBaseName = getSafeFileName(imageFile.name).replace(/\.[^.]+$/, '');
+    const path = `products/${Date.now()}-${fileBaseName}.${normalizedImage.extension}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, normalizedImage.body, {
+      contentType: normalizedImage.contentType,
+    });
     if (error) throw new Error(error.message);
     const { data } = supabase.storage.from('product-images').getPublicUrl(path);
     return data.publicUrl;

@@ -15,6 +15,33 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+const normalizeImageForDisplay = async (source: string): Promise<string> => {
+  if (!source || source.startsWith('data:') || source.startsWith('blob:')) {
+    return source;
+  }
+
+  try {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      image.src = source;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const context = canvas.getContext('2d');
+    if (!context) return source;
+
+    context.drawImage(image, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.92);
+  } catch {
+    return source;
+  }
+};
+
 function Storefront() {
   const [cart, setCart] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem('sabores-do-campo-cart');
@@ -30,6 +57,7 @@ function Storefront() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailQuantity, setDetailQuantity] = useState(1);
+  const [displayImageSources, setDisplayImageSources] = useState<Record<string, string>>({});
 
   useEffect(() => {
     localStorage.setItem('sabores-do-campo-cart', JSON.stringify(cart));
@@ -45,6 +73,33 @@ function Storefront() {
       setIsLoading(false);
     }).catch(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const normalizeImages = async () => {
+      const entries = await Promise.all(
+        supabaseProducts.map(async (product) => [product.id, await normalizeImageForDisplay(product.image)] as const)
+      );
+
+      if (!cancelled) {
+        setDisplayImageSources(Object.fromEntries(entries));
+      }
+    };
+
+    if (supabaseProducts.length === 0) {
+      setDisplayImageSources({});
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    normalizeImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supabaseProducts]);
 
   // Agora usamos apenas os produtos vindos do Supabase
   const allProducts = supabaseProducts;
@@ -197,7 +252,7 @@ function Storefront() {
                 <div className="products-grid">
                   {filtered.map(product => (
                     <button key={product.id} className="product-card" type="button" onClick={() => openProductModal(product)}>
-                      <div className="product-image-container"><img src={product.image} alt={product.name} className="product-image" /></div>
+                      <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
                       <div className="product-info">
                         <h3>{product.name}</h3>
                         <p className="product-description">{product.description}</p>
@@ -256,7 +311,7 @@ function Storefront() {
           <article className="product-modal" onClick={(event) => event.stopPropagation()}>
             <button className="product-modal-close" type="button" onClick={() => setSelectedProduct(null)}><X size={22} /></button>
             <div className="product-modal-image-wrap">
-              <img src={selectedProduct.image} alt={selectedProduct.name} className="product-modal-image" />
+              <img src={displayImageSources[selectedProduct.id] || selectedProduct.image} alt={selectedProduct.name} className="product-modal-image" />
             </div>
             <div className="product-modal-body">
               <span className="product-modal-category">{selectedProduct.category}</span>
