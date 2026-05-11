@@ -538,9 +538,17 @@ body {
 
 .product-modal-image-wrap {
   width: 100%;
-  aspect-ratio: 16 / 11;
+  aspect-ratio: 1 / 1;
   background: var(--bg-main);
   overflow: hidden;
+  max-height: 45vh;
+}
+
+@media (max-width: 768px) {
+  .product-modal-image-wrap {
+    aspect-ratio: 1 / 1;
+    height: min(45vh, 380px);
+  }
 }
 
 .product-modal-image {
