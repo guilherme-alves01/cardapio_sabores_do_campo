@@ -28,6 +28,8 @@ function Storefront() {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [supabaseProducts, setSupabaseProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [detailQuantity, setDetailQuantity] = useState(1);
 
   useEffect(() => {
     localStorage.setItem('sabores-do-campo-cart', JSON.stringify(cart));
@@ -73,6 +75,19 @@ function Storefront() {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
+  };
+
+  const openProductModal = (product: Product) => {
+    setSelectedProduct(product);
+    setDetailQuantity(1);
+  };
+
+  const handleAddProductDetail = () => {
+    if (!selectedProduct) return;
+    for (let index = 0; index < detailQuantity; index += 1) {
+      addToCart(selectedProduct);
+    }
+    setSelectedProduct(null);
   };
 
   const updateQuantity = (productId: string, delta: number) => {
@@ -173,17 +188,17 @@ function Storefront() {
                 <h2 className="section-heading">{category}</h2>
                 <div className="products-grid">
                   {filtered.map(product => (
-                    <div key={product.id} className="product-card">
+                    <button key={product.id} className="product-card" type="button" onClick={() => openProductModal(product)}>
                       <div className="product-image-container"><img src={product.image} alt={product.name} className="product-image" /></div>
                       <div className="product-info">
                         <h3>{product.name}</h3>
                         <p className="product-description">{product.description}</p>
                         <div className="product-footer">
                           <span className="product-price">{product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                          <button className="add-btn" onClick={() => addToCart(product)}><Plus size={20} /></button>
+                          <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -225,6 +240,32 @@ function Storefront() {
         </aside>
       </main>
       <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSubmit={handleCheckoutSubmit} total={cartTotal} />
+      {selectedProduct && (
+        <div className="product-modal-overlay" onClick={() => setSelectedProduct(null)}>
+          <article className="product-modal" onClick={(event) => event.stopPropagation()}>
+            <button className="product-modal-close" type="button" onClick={() => setSelectedProduct(null)}><X size={22} /></button>
+            <div className="product-modal-image-wrap">
+              <img src={selectedProduct.image} alt={selectedProduct.name} className="product-modal-image" />
+            </div>
+            <div className="product-modal-body">
+              <span className="product-modal-category">{selectedProduct.category}</span>
+              <h2>{selectedProduct.name}</h2>
+              {selectedProduct.description && <p>{selectedProduct.description}</p>}
+              <strong>{selectedProduct.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+              <div className="product-modal-actions">
+                <div className="product-modal-quantity">
+                  <button type="button" onClick={() => setDetailQuantity(quantity => Math.max(1, quantity - 1))}><Minus size={16} /></button>
+                  <span>{detailQuantity}</span>
+                  <button type="button" onClick={() => setDetailQuantity(quantity => quantity + 1)}><Plus size={16} /></button>
+                </div>
+                <button className="product-modal-add" type="button" onClick={handleAddProductDetail}>
+                  Adicionar à sacola
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      )}
       {cart.length > 0 && (
         <button className="mobile-cart-fab" onClick={() => setIsCartOpen(true)}>
           <ShoppingBag size={24} /> <span>Ver Sacola</span> <span>{cartTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>

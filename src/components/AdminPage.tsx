@@ -32,6 +32,19 @@ const formatCurrency = (value: number | string) =>
 
 type FeedbackType = 'info' | 'success' | 'error';
 
+const getSafeFileName = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const baseName = fileName
+    .replace(/\.[^/.]+$/, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'produto';
+
+  return `${baseName}.${extension}`;
+};
+
 export function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
@@ -46,6 +59,7 @@ export function AdminPage() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState('');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<FeedbackType>('info');
   const [settingsMessage, setSettingsMessage] = useState('');
@@ -100,15 +114,13 @@ export function AdminPage() {
     if (!supabase) return;
 
     setIsSaving(true);
-    setMessage('');
-    setMessageType('info');
+    setLoginMessage('');
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     setIsSaving(false);
     if (error) {
-      setMessageType('error');
-      setMessage(`Erro no login: ${error.message}`);
+      setLoginMessage(`Erro no login: ${error.message}`);
     }
   };
 
@@ -121,7 +133,7 @@ export function AdminPage() {
 
   const uploadImage = async () => {
     if (!supabase || !imageFile) return '';
-    const path = `products/${Date.now()}-${imageFile.name}`;
+    const path = `products/${Date.now()}-${getSafeFileName(imageFile.name)}`;
     const { error } = await supabase.storage.from('product-images').upload(path, imageFile);
     if (error) throw new Error(error.message);
     const { data } = supabase.storage.from('product-images').getPublicUrl(path);
@@ -281,7 +293,7 @@ export function AdminPage() {
           <h1>Administração</h1>
           <label>E-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} required /></label>
           <label>Senha<input type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label>
-          {message && <p className={`admin-message ${messageType}`}>{message}</p>}
+          {loginMessage && <p className="admin-message error">{loginMessage}</p>}
           <button className="admin-primary-btn" type="submit" disabled={isSaving}>
             {isSaving ? <><Loader2 className="spin" size={18} /> Entrando...</> : 'Entrar'}
           </button>
