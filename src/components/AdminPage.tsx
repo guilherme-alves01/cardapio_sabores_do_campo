@@ -292,12 +292,10 @@ export function AdminPage() {
 
       <section className="admin-grid">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {settings && (
-            <button className="settings-trigger" type="button" onClick={() => setIsSettingsModalOpen(true)}>
+          <button className="settings-trigger" type="button" onClick={() => settings && setIsSettingsModalOpen(true)} disabled={!settings}>
               <span><Settings size={20} />Configurações da Loja</span>
-              <span>Editar</span>
-            </button>
-          )}
+              <span>{settings ? 'Editar' : 'Carregando...'}</span>
+          </button>
 
           <button className="settings-trigger" type="button" onClick={handleNewProductClick}>
             <span><Upload size={20} />Novo Produto</span>

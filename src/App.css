@@ -660,6 +660,17 @@ body {
   box-shadow: var(--shadow-hover);
 }
 
+.settings-trigger:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-trigger:disabled:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-soft);
+}
+
 .settings-trigger + .settings-trigger {
   margin-top: -8px;
 }
