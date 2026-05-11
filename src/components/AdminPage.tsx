@@ -333,9 +333,13 @@ export function AdminPage() {
           <h2>Produtos no Banco de Dados</h2>
           <div className="admin-product-list">
             {products.map(p => (
-              <article className={`admin-product-row ${editingId === p.id ? 'editing' : ''}`} key={p.id}>
+              <article className={`admin-product-row ${editingId === p.id ? 'editing' : ''} ${p.featured ? 'featured' : ''}`} key={p.id}>
                 <div className="admin-product-thumb">{p.image_url && <img src={p.image_url} alt="" />}</div>
-                <div className="admin-product-info"><strong>{p.name}</strong><span>{p.category} · {formatCurrency(p.price)}</span></div>
+                <div className="admin-product-info">
+                  <strong>{p.name}</strong>
+                  <span>{p.category} · {formatCurrency(p.price)}</span>
+                  {p.featured && <span className="admin-badge">Destaque</span>}
+                </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="admin-icon-btn" onClick={() => handleEditClick(p)} title="Editar"><Edit2 size={16} /></button>
                   <button className="admin-danger-btn" onClick={() => handleDeleteProduct(p.id)} title="Excluir"><Trash2 size={16} /></button>

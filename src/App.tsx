@@ -122,10 +122,17 @@ function Storefront() {
     return acc;
   }, {} as Record<string, Product[]>);
 
+  const sortProducts = (products: Product[]) => [...products].sort((left, right) => {
+    const featuredDelta = Number(right.featured ?? false) - Number(left.featured ?? false);
+    if (featuredDelta !== 0) return featuredDelta;
+    return left.name.localeCompare(right.name);
+  });
+
+  const featuredProducts = sortProducts(allProducts.filter(product => product.featured));
   const categoryOrder = ['Polpas', 'Biscoitos', 'Licores', 'Sorvetes', 'Diversos'];
   const otherCategories = Object.keys(groupedProducts).filter(cat => !categoryOrder.includes(cat));
   const finalCategoryOrder = [...categoryOrder.filter(cat => groupedProducts[cat]), ...otherCategories];
-  const filterCategories = ['Todos', ...finalCategoryOrder];
+  const filterCategories = ['Todos', 'Destaques', ...finalCategoryOrder];
 
   const scrollToCategory = (category: string) => {
     setSelectedCategory(category);
@@ -177,8 +184,9 @@ function Storefront() {
             </div>
           </div>
 
-          {finalCategoryOrder.map(category => {
-            const filtered = (groupedProducts[category] || []).filter(p => 
+          {['Destaques', ...finalCategoryOrder].map(category => {
+            const sourceProducts = category === 'Destaques' ? featuredProducts : (groupedProducts[category] || []);
+            const filtered = sourceProducts.filter(p => 
               p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
               p.description.toLowerCase().includes(searchQuery.toLowerCase())
             );
