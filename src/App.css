@@ -723,18 +723,30 @@ body {
   justify-content: space-between;
 }
 
-.cart-item-total-price {
-  font-weight: 700;
-  color: var(--primary);
+.cart-item-header h4 {
+  margin: 0 0 12px;
 }
 
 .item-actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   background: var(--bg-main);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
+}
+
+.item-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-actions strong {
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .qty-btn {

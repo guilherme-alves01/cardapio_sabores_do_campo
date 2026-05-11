@@ -218,12 +218,15 @@ function Storefront() {
               {cart.length === 0 ? <p>Sua sacola está vazia.</p> : cart.map(item => (
                 <div key={item.id} className="cart-item">
                   <div className="cart-item-info">
-                    <div className="cart-item-header"><h4>{item.name}</h4><span>{(item.price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+                    <div className="cart-item-header"><h4>{item.name}</h4></div>
                     <div className="cart-item-details">
                       <div className="item-actions">
-                        <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}><Minus size={14} /></button>
-                        <span>{item.quantity}</span>
-                        <button className="qty-btn" onClick={() => updateQuantity(item.id, 1)}><Plus size={14} /></button>
+                        <div className="item-quantity-controls">
+                          <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}><Minus size={14} /></button>
+                          <span>{item.quantity}</span>
+                          <button className="qty-btn" onClick={() => updateQuantity(item.id, 1)}><Plus size={14} /></button>
+                        </div>
+                        <strong>{(item.price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
                       </div>
                     </div>
                   </div>
