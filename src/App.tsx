@@ -30,6 +30,7 @@ function Storefront() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailQuantity, setDetailQuantity] = useState(1);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     localStorage.setItem('sabores-do-campo-cart', JSON.stringify(cart));
@@ -197,7 +198,16 @@ function Storefront() {
                 <div className="products-grid">
                   {filtered.map(product => (
                     <button key={product.id} className="product-card" type="button" onClick={() => openProductModal(product)}>
-                      <div className="product-image-container"><img src={product.image} alt={product.name} className="product-image" /></div>
+                      <div className={`product-image-container ${loadedImages[product.id] ? 'is-loaded' : ''}`}>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className={`product-image ${loadedImages[product.id] ? 'is-loaded' : ''}`}
+                          loading="lazy"
+                          decoding="async"
+                          onLoad={() => setLoadedImages(prev => (prev[product.id] ? prev : { ...prev, [product.id]: true }))}
+                        />
+                      </div>
                       <div className="product-info">
                         <h3>{product.name}</h3>
                         <p className="product-description">{product.description}</p>
