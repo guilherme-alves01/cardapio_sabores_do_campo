@@ -259,6 +259,10 @@ body {
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   position: relative;
+  opacity: 0;
+  animation: card-rise 0.45s ease forwards;
+  animation-delay: calc(var(--card-index, 0) * 55ms);
+  will-change: transform, opacity;
 }
 
 .product-card:hover {
@@ -351,6 +355,7 @@ body {
   justify-content: center;
   padding: 24px;
   box-sizing: border-box;
+  animation: overlay-fade 0.22s ease-out both;
 }
 
 .modal-overlay {
@@ -374,6 +379,7 @@ body {
     box-shadow: 0 24px 70px rgba(44, 48, 46, 0.22);
     padding: 24px;
     position: relative;
+    animation: panel-pop 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .modal-header,
@@ -653,6 +659,8 @@ body {
   position: sticky;
   top: 100px;
   height: fit-content;
+  transform-origin: right top;
+  will-change: transform, opacity;
 }
 
 .cart-container {
@@ -799,15 +807,41 @@ body {
 }
 
 .cart-overlay {
-  display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.76);
   backdrop-filter: none;
-  z-index: 1900;
+  z-index: 1950;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
-.cart-overlay.open { display: block; }
+.cart-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cart-feedback {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  z-index: 2400;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 16px 34px rgba(224, 90, 61, 0.28);
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: cart-feedback-in 0.25s ease both;
+}
 
 .mobile-cart-fab {
   display: none;
@@ -824,6 +858,7 @@ body {
   box-shadow: 0 10px 25px rgba(224, 90, 61, 0.3);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fab-rise 0.35s ease both;
 }
 
 .mobile-cart-fab:hover {
@@ -840,15 +875,45 @@ body {
   .cart-sidebar {
     position: fixed;
     top: 0; right: -100%;
-    width: 100%; max-width: 400px;
+    width: min(100%, 380px); max-width: 380px;
     height: 100vh; z-index: 2000;
     transition: right 0.3s ease;
   }
-  .cart-sidebar.open { right: 0; }
+  .cart-sidebar.open { right: 0; animation: sidebar-slide 0.32s ease both; }
   .mobile-cart-fab { display: flex; }
 }
 
 @media (max-width: 768px) {
+  .cart-sidebar {
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    width: min(calc(100vw - 24px), 360px);
+    max-width: 360px;
+    height: min(calc(100vh - 24px), 680px);
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+  }
+  .cart-sidebar.open {
+    animation: none;
+    right: auto;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cart-container { height: 100%; max-height: none; border-radius: 20px; }
+  .cart-header,
+  .cart-content,
+  .cart-footer { padding-left: 16px; padding-right: 16px; }
+  .cart-header { padding-top: 16px; padding-bottom: 16px; }
+  .cart-content { padding-top: 14px; padding-bottom: 14px; }
+  .cart-item { margin-bottom: 16px; }
+  .item-actions { padding: 5px 10px; gap: 10px; }
+  .grand-total { font-size: 1.15rem; }
+  .checkout-btn { padding: 14px; font-size: 1rem; }
   .nav-links { display: flex; gap: 16px; }
   .nav-item:not(.nav-admin) { display: none; }
   .store-info-grid { flex-direction: column; gap: 8px; }
@@ -895,6 +960,7 @@ body {
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);
+  animation: panel-pop 0.28s ease both;
 }
 
 .admin-card {
@@ -1129,6 +1195,7 @@ body {
 
 .admin-product-row {
   display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; padding: 10px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: white; margin-bottom: 12px;
+  animation: row-rise 0.35s ease both;
 }
 
 .admin-product-row.editing {
@@ -1232,6 +1299,92 @@ body {
 .admin-file-field input { display: none; }
 
 .spin { animation: spin 0.8s linear infinite; }
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes panel-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sidebar-slide {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes row-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fab-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cart-feedback-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-modal-overlay,
+  .checkout-modal,
+  .cart-sidebar.open,
+  .mobile-cart-fab,
+  .cart-feedback,
+  .admin-card,
+  .admin-panel,
+  .admin-product-row {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 900px) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { ShoppingBag, Search, MapPin, Clock, Plus, Minus, X, Settings, Loader2 } from 'lucide-react';
 import { CategoryFilter } from './components/CategoryFilter';
 import { CheckoutModal } from './components/CheckoutModal';
@@ -58,10 +58,20 @@ function Storefront() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailQuantity, setDetailQuantity] = useState(1);
   const [displayImageSources, setDisplayImageSources] = useState<Record<string, string>>({});
+  const [cartFeedback, setCartFeedback] = useState<string | null>(null);
+  const cartFeedbackTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     localStorage.setItem('sabores-do-campo-cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    return () => {
+      if (cartFeedbackTimeout.current) {
+        window.clearTimeout(cartFeedbackTimeout.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -120,16 +130,21 @@ function Storefront() {
     ? settings.opening_days?.includes(currentDay) && currentHour >= settings.start_hour && currentHour < settings.end_hour
     : currentDay >= 1 && currentDay <= 6 && currentHour >= 8 && currentHour < 19;
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantity = 1) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
         return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, quantity }];
     });
+    setCartFeedback(`${product.name} adicionado`);
+    if (cartFeedbackTimeout.current) {
+      window.clearTimeout(cartFeedbackTimeout.current);
+    }
+    cartFeedbackTimeout.current = window.setTimeout(() => setCartFeedback(null), 1800);
   };
 
   const openProductModal = (product: Product) => {
@@ -139,9 +154,7 @@ function Storefront() {
 
   const handleAddProductDetail = () => {
     if (!selectedProduct) return;
-    for (let index = 0; index < detailQuantity; index += 1) {
-      addToCart(selectedProduct);
-    }
+    addToCart(selectedProduct, detailQuantity);
     setSelectedProduct(null);
   };
 
@@ -250,8 +263,14 @@ function Storefront() {
               <section key={category} id={`category-${category}`} style={{ marginTop: '40px' }}>
                 <h2 className="section-heading">{category}</h2>
                 <div className="products-grid">
-                  {filtered.map(product => (
-                    <button key={product.id} className="product-card" type="button" onClick={() => openProductModal(product)}>
+                  {filtered.map((product, index) => (
+                    <button
+                      key={product.id}
+                      className="product-card"
+                      type="button"
+                      onClick={() => openProductModal(product)}
+                      style={{ '--card-index': index } as CSSProperties}
+                    >
                       <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
                       <div className="product-info">
                         <h3>{product.name}</h3>
@@ -306,6 +325,7 @@ function Storefront() {
         </aside>
       </main>
       <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSubmit={handleCheckoutSubmit} total={cartTotal} />
+      {cartFeedback && <div className="cart-feedback" role="status">{cartFeedback}</div>}
       {selectedProduct && (
         <div className="product-modal-overlay" onClick={() => setSelectedProduct(null)}>
           <article className="product-modal" onClick={(event) => event.stopPropagation()}>
