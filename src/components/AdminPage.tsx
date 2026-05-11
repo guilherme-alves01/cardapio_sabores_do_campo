@@ -30,6 +30,8 @@ const emptyForm: ProductForm = {
 const formatCurrency = (value: number | string) =>
   Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+type FeedbackType = 'info' | 'success' | 'error';
+
 export function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
@@ -45,7 +47,9 @@ export function AdminPage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<FeedbackType>('info');
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [settingsMessageType, setSettingsMessageType] = useState<FeedbackType>('info');
 
   const categories = useMemo(
     () => Array.from(new Set(products.map(product => product.category))).sort(),
@@ -97,11 +101,13 @@ export function AdminPage() {
 
     setIsSaving(true);
     setMessage('');
+    setMessageType('info');
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     setIsSaving(false);
     if (error) {
+      setMessageType('error');
       setMessage(`Erro no login: ${error.message}`);
     }
   };
@@ -135,6 +141,7 @@ export function AdminPage() {
     });
     setImageFile(null);
     setMessage('');
+    setMessageType('info');
     setIsProductModalOpen(true);
   };
 
@@ -150,6 +157,7 @@ export function AdminPage() {
     setForm(emptyForm);
     setImageFile(null);
     setMessage('');
+    setMessageType('info');
     setIsProductModalOpen(true);
   };
 
@@ -158,12 +166,14 @@ export function AdminPage() {
     if (!supabase) return;
 
     setIsSaving(true);
-    setMessage('');
+    setMessageType('info');
+    setMessage(imageFile ? 'Enviando imagem...' : 'Salvando produto...');
 
     try {
       let imageUrl = '';
       if (imageFile) {
         imageUrl = await uploadImage();
+        setMessage('Imagem enviada. Salvando produto...');
       }
       
       const price = Number(form.price.replace(',', '.'));
@@ -189,19 +199,18 @@ export function AdminPage() {
           .update(productData)
           .eq('id', editingId);
         if (error) throw new Error(error.message);
+        setMessageType('success');
         setMessage('Produto atualizado com sucesso!');
       } else {
         const { error } = await supabase.from('products').insert(productData);
         if (error) throw new Error(error.message);
+        setMessageType('success');
         setMessage('Produto cadastrado com sucesso!');
       }
 
-      setForm(emptyForm);
-      setEditingId(null);
-      setImageFile(null);
-      setIsProductModalOpen(false);
       await loadData();
     } catch (error) {
+      setMessageType('error');
       setMessage(error instanceof Error ? error.message : 'Erro ao salvar produto.');
     } finally {
       setIsSaving(false);
@@ -214,9 +223,11 @@ export function AdminPage() {
 
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) {
+      setMessageType('error');
       setMessage(`Erro ao remover: ${error.message}`);
       return;
     }
+    setMessageType('success');
     setMessage('Produto removido.');
     await loadData();
   };
@@ -226,12 +237,15 @@ export function AdminPage() {
     if (!settings) return;
 
     setIsSavingSettings(true);
-    setSettingsMessage('');
+    setSettingsMessageType('info');
+    setSettingsMessage('Salvando configurações...');
 
     try {
       await updateStoreSettings(settings);
+      setSettingsMessageType('success');
       setSettingsMessage('Configurações salvas com sucesso!');
     } catch (error) {
+      setSettingsMessageType('error');
       setSettingsMessage(error instanceof Error ? error.message : 'Erro ao salvar configurações.');
     } finally {
       setIsSavingSettings(false);
@@ -267,9 +281,9 @@ export function AdminPage() {
           <h1>Administração</h1>
           <label>E-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} required /></label>
           <label>Senha<input type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label>
-          {message && <p className="admin-message">{message}</p>}
+          {message && <p className={`admin-message ${messageType}`}>{message}</p>}
           <button className="admin-primary-btn" type="submit" disabled={isSaving}>
-            {isSaving ? <Loader2 className="spin" size={18} /> : 'Entrar'}
+            {isSaving ? <><Loader2 className="spin" size={18} /> Entrando...</> : 'Entrar'}
           </button>
           <a href="/" className="admin-secondary-link">Voltar ao cardápio</a>
         </form>
@@ -379,8 +393,10 @@ export function AdminPage() {
                 </div>
               </div>
 
-              {settingsMessage && <p className="admin-message">{settingsMessage}</p>}
-              <button className="admin-primary-btn" type="submit" disabled={isSavingSettings}><Save size={18} /> Salvar Configurações</button>
+              {settingsMessage && <p className={`admin-message ${settingsMessageType}`}>{settingsMessage}</p>}
+              <button className="admin-primary-btn" type="submit" disabled={isSavingSettings}>
+                {isSavingSettings ? <><Loader2 className="spin" size={18} /> Salvando...</> : <><Save size={18} /> Salvar Configurações</>}
+              </button>
             </div>
           </form>
         </div>
@@ -435,8 +451,10 @@ export function AdminPage() {
                   <input type="checkbox" checked={form.active} style={{ accentColor: 'white' }} onChange={e => setForm({ ...form, active: e.target.checked })} /> Ativo
                 </label>
               </div>
-              {message && <p className="admin-message">{message}</p>}
-              <button className="admin-primary-btn" type="submit" disabled={isSaving}><Save size={18} /> {editingId ? 'Salvar Alterações' : 'Cadastrar Produto'}</button>
+              {message && <p className={`admin-message ${messageType}`}>{message}</p>}
+              <button className="admin-primary-btn" type="submit" disabled={isSaving}>
+                {isSaving ? <><Loader2 className="spin" size={18} /> Salvando...</> : <><Save size={18} /> {editingId ? 'Salvar Alterações' : 'Cadastrar Produto'}</>}
+              </button>
             </div>
           </form>
         </div>
