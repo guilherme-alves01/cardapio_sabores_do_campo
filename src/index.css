@@ -38,10 +38,17 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background: var(--bg);
+}
+
+html {
+  background: var(--bg);
+  color-scheme: light;
 }
 
 body {
   margin: 0;
+  background: var(--bg);
 }
 
 h1,
