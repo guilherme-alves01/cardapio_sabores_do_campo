@@ -418,37 +418,15 @@ export function AdminPage() {
               <label>Descrição<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
               <label className="admin-file-field">Imagem<span><Upload size={18} /> {imageFile ? imageFile.name : (editingId ? 'Trocar Foto' : 'Upload Foto')}</span><input type="file" onChange={e => setImageFile(e.target.files?.[0] || null)} /></label>
               <div className="admin-checks">
-                <label style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  background: form.featured ? 'var(--primary)' : 'var(--bg-main)',
-                  color: form.featured ? 'white' : 'var(--text-dark)',
-                  borderRadius: '6px',
-                  border: '1px solid',
-                  borderColor: form.featured ? 'var(--primary)' : 'var(--border-light)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input type="checkbox" checked={form.featured} style={{ accentColor: 'white' }} onChange={e => setForm({ ...form, featured: e.target.checked })} /> Destaque
+                <label className={`admin-toggle ${form.featured ? 'checked' : ''}`}>
+                  <input type="checkbox" checked={form.featured} onChange={e => setForm({ ...form, featured: e.target.checked })} />
+                  <span>Destaque</span>
+                  <strong>{form.featured ? 'Sim' : 'Não'}</strong>
                 </label>
-                <label style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  background: form.active ? 'var(--primary)' : 'var(--bg-main)',
-                  color: form.active ? 'white' : 'var(--text-dark)',
-                  borderRadius: '6px',
-                  border: '1px solid',
-                  borderColor: form.active ? 'var(--primary)' : 'var(--border-light)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input type="checkbox" checked={form.active} style={{ accentColor: 'white' }} onChange={e => setForm({ ...form, active: e.target.checked })} /> Ativo
+                <label className={`admin-toggle ${form.active ? 'checked' : ''}`}>
+                  <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} />
+                  <span>Ativo</span>
+                  <strong>{form.active ? 'Sim' : 'Não'}</strong>
                 </label>
               </div>
               {message && <p className={`admin-message ${messageType}`}>{message}</p>}
