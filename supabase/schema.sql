@@ -25,3 +25,7 @@ CREATE POLICY "Configurações são públicas para leitura"
 CREATE POLICY "Apenas usuários autenticados podem modificar"
     ON public.store_settings FOR ALL
     USING (auth.role() = 'authenticated');
+
+ALTER TABLE IF EXISTS public.products
+    ADD COLUMN IF NOT EXISTS promotion_active boolean NOT NULL DEFAULT false,
+    ADD COLUMN IF NOT EXISTS promotion_price numeric(10, 2);

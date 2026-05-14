@@ -18,15 +18,24 @@ export const getCatalogProducts = async (): Promise<Product[]> => {
     throw new Error(error.message);
   }
 
-  return (data || []).map(p => ({
-    id: p.id,
-    name: p.name,
-    description: p.description || '',
-    price: Number(p.price),
-    category: p.category,
-    image: p.image_url || '',
-    featured: p.featured || false
-  }));
+  return (data || []).map(p => {
+    const originalPrice = Number(p.price);
+    const promotionPrice = p.promotion_price != null ? Number(p.promotion_price) : null;
+    const hasPromotion = Boolean(p.promotion_active) && promotionPrice != null && promotionPrice > 0 && promotionPrice < originalPrice;
+
+    return {
+      id: p.id,
+      name: p.name,
+      description: p.description || '',
+      price: hasPromotion ? promotionPrice : originalPrice,
+      originalPrice,
+      promotionPrice: hasPromotion ? promotionPrice : null,
+      promotionActive: hasPromotion,
+      category: p.category,
+      image: p.image_url || '',
+      featured: p.featured || false
+    };
+  });
 };
 
 export const getAllAdminProducts = async (): Promise<any[]> => {

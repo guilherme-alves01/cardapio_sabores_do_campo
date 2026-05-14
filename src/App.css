@@ -327,9 +327,29 @@ body {
   border-top: 1px solid var(--border-light);
 }
 
+.product-price-group {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
 .product-price {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.product-price--promo {
+  color: #16A34A;
+}
+
+.product-price-old {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  text-decoration: line-through;
 }
 
 .add-btn {
@@ -634,6 +654,36 @@ body {
   color: var(--primary);
   font-size: 1.4rem;
   margin-bottom: 18px;
+}
+
+.product-modal-price {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.product-modal-price strong {
+  display: block;
+  color: var(--primary);
+  font-size: 1.4rem;
+  margin-bottom: 0;
+}
+
+.product-modal-price-current--promo {
+  color: #16A34A;
+}
+
+.product-modal-price strong.product-modal-price-current--promo {
+  color: #16A34A;
+}
+
+.product-modal-price-old {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  text-decoration: line-through;
 }
 
 .product-modal-actions {
@@ -1268,6 +1318,7 @@ body {
   align-items: center;
   width: fit-content;
   padding: 3px 8px;
+  margin-top: 6px;
   border-radius: var(--radius-pill);
   background: rgba(224, 90, 61, 0.1);
   color: var(--primary);
@@ -1275,6 +1326,12 @@ body {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+.admin-badge-promo {
+  background: rgba(34, 197, 94, 0.14);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.22);
 }
 
 .admin-icon-btn {

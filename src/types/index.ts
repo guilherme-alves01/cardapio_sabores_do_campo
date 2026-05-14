@@ -3,6 +3,9 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  promotionPrice?: number | null;
+  promotionActive?: boolean;
   image: string;
   category: string;
   featured?: boolean;

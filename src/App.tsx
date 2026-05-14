@@ -42,6 +42,20 @@ const normalizeImageForDisplay = async (source: string): Promise<string> => {
   }
 };
 
+const formatCurrency = (value: number) =>
+  value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const getProductPricing = (product: Product) => {
+  const originalPrice = product.originalPrice ?? product.price;
+  const hasPromotion = Boolean(product.promotionActive) && originalPrice > product.price;
+
+  return {
+    originalPrice,
+    hasPromotion,
+    price: product.price,
+  };
+};
+
 function Storefront() {
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -278,7 +292,19 @@ function Storefront() {
                         <h3>{product.name}</h3>
                         <p className="product-description">{product.description}</p>
                         <div className="product-footer">
-                          <span className="product-price">{product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                          {(() => {
+                            const pricing = getProductPricing(product);
+                            return (
+                              <div className="product-price-group">
+                                {pricing.hasPromotion && (
+                                  <span className="product-price-old">{formatCurrency(pricing.originalPrice)}</span>
+                                )}
+                                <span className={`product-price ${pricing.hasPromotion ? 'product-price--promo' : ''}`}>
+                                  {formatCurrency(product.price)}
+                                </span>
+                              </div>
+                            );
+                          })()}
                           <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
                         </div>
                       </div>
@@ -340,7 +366,21 @@ function Storefront() {
               <span className="product-modal-category">{selectedProduct.category}</span>
               <h2>{selectedProduct.name}</h2>
               {selectedProduct.description && <p>{selectedProduct.description}</p>}
-              <strong>{selectedProduct.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+              <div className="product-modal-price">
+                {(() => {
+                  const pricing = getProductPricing(selectedProduct);
+                  return (
+                    <>
+                      {pricing.hasPromotion && (
+                        <span className="product-modal-price-old">{formatCurrency(pricing.originalPrice)}</span>
+                      )}
+                      <strong className={pricing.hasPromotion ? 'product-modal-price-current--promo' : ''}>
+                        {formatCurrency(selectedProduct.price)}
+                      </strong>
+                    </>
+                  );
+                })()}
+              </div>
               <div className="product-modal-actions">
                 <div className="product-modal-quantity">
                   <button type="button" onClick={() => setDetailQuantity(quantity => Math.max(1, quantity - 1))}><Minus size={16} /></button>

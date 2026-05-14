@@ -11,6 +11,8 @@ interface ProductForm {
   name: string;
   description: string;
   price: string;
+  promotionPrice: string;
+  promotionActive: boolean;
   category: string;
   featured: boolean;
   active: boolean;
@@ -21,6 +23,8 @@ const emptyForm: ProductForm = {
   name: '',
   description: '',
   price: '',
+  promotionPrice: '',
+  promotionActive: false,
   category: '',
   featured: false,
   active: true,
@@ -29,6 +33,14 @@ const emptyForm: ProductForm = {
 
 const formatCurrency = (value: number | string) =>
   Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const getAdminProductPricing = (product: any) => {
+  const originalPrice = Number(product.price);
+  const promotionPrice = product.promotion_price != null ? Number(product.promotion_price) : null;
+  const hasPromotion = Boolean(product.promotion_active) && promotionPrice != null && promotionPrice > 0 && promotionPrice < originalPrice;
+
+  return { originalPrice, promotionPrice, hasPromotion };
+};
 
 type FeedbackType = 'info' | 'success' | 'error';
 
@@ -195,11 +207,14 @@ export function AdminPage() {
   };
 
   const handleEditClick = (product: any) => {
+    const pricing = getAdminProductPricing(product);
     setEditingId(product.id);
     setForm({
       name: product.name,
       description: product.description || '',
       price: product.price.toString().replace('.', ','),
+      promotionPrice: pricing.promotionPrice != null ? pricing.promotionPrice.toString().replace('.', ',') : '',
+      promotionActive: pricing.hasPromotion,
       category: product.category,
       featured: product.featured || false,
       active: product.active ?? true,
@@ -243,12 +258,20 @@ export function AdminPage() {
       }
       
       const price = Number(form.price.replace(',', '.'));
+      const promotionPrice = form.promotionPrice ? Number(form.promotionPrice.replace(',', '.')) : null;
       const sortOrder = Number(form.sortOrder || 0);
+      const hasPromotion = form.promotionActive && promotionPrice != null && promotionPrice > 0 && promotionPrice < price;
+
+      if (form.promotionActive && !hasPromotion) {
+        throw new Error('O preço promocional precisa ser menor que o preço normal.');
+      }
 
       const productData: any = {
         name: form.name.trim(),
         description: form.description.trim(),
         price,
+        promotion_active: hasPromotion,
+        promotion_price: hasPromotion ? promotionPrice : null,
         category: form.category.trim(),
         featured: form.featured,
         active: form.active,
@@ -386,20 +409,29 @@ export function AdminPage() {
         <section className="admin-panel">
           <h2>Produtos no Banco de Dados</h2>
           <div className="admin-product-list">
-            {products.map(p => (
-              <article className={`admin-product-row ${editingId === p.id ? 'editing' : ''} ${p.featured ? 'featured' : ''}`} key={p.id}>
-                <div className="admin-product-thumb">{p.image_url && <img src={p.image_url} alt="" />}</div>
-                <div className="admin-product-info">
-                  <strong>{p.name}</strong>
-                  <span>{p.category} · {formatCurrency(p.price)}</span>
-                  {p.featured && <span className="admin-badge">Destaque</span>}
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="admin-icon-btn" onClick={() => handleEditClick(p)} title="Editar"><Edit2 size={16} /></button>
-                  <button className="admin-danger-btn" onClick={() => handleDeleteProduct(p.id)} title="Excluir"><Trash2 size={16} /></button>
-                </div>
-              </article>
-            ))}
+            {products.map(p => {
+              const pricing = getAdminProductPricing(p);
+
+              return (
+                <article className={`admin-product-row ${editingId === p.id ? 'editing' : ''} ${p.featured ? 'featured' : ''}`} key={p.id}>
+                  <div className="admin-product-thumb">{p.image_url && <img src={p.image_url} alt="" />}</div>
+                  <div className="admin-product-info">
+                    <strong>{p.name}</strong>
+                    <span>{p.category} · {formatCurrency(pricing.hasPromotion ? pricing.promotionPrice! : p.price)}</span>
+                    {pricing.hasPromotion && (
+                      <span className="admin-badge admin-badge-promo">
+                        {formatCurrency(p.price)} → {formatCurrency(pricing.promotionPrice!)}
+                      </span>
+                    )}
+                    {p.featured && <span className="admin-badge">Destaque</span>}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="admin-icon-btn" onClick={() => handleEditClick(p)} title="Editar"><Edit2 size={16} /></button>
+                    <button className="admin-danger-btn" onClick={() => handleDeleteProduct(p.id)} title="Excluir"><Trash2 size={16} /></button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
       </section>
@@ -486,6 +518,14 @@ export function AdminPage() {
               <label>Categoria<input list="cats" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required /><datalist id="cats">{categories.map(c => <option key={c} value={c} />)}</datalist></label>
               <label>Preço<input value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="19,90" required /></label>
               <label>Descrição<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
+              <div className="admin-checks">
+                <label className={`admin-toggle ${form.promotionActive ? 'checked' : ''}`}>
+                  <input type="checkbox" checked={form.promotionActive} onChange={e => setForm({ ...form, promotionActive: e.target.checked })} />
+                  <span>Promoção</span>
+                  <strong>{form.promotionActive ? 'Sim' : 'Não'}</strong>
+                </label>
+              </div>
+              <label>Preço promocional<input value={form.promotionPrice} onChange={e => setForm({ ...form, promotionPrice: e.target.value })} placeholder="14,90" disabled={!form.promotionActive} /></label>
               <label className="admin-file-field">Imagem<span><Upload size={18} /> {imageFile ? imageFile.name : (editingId ? 'Trocar Foto' : 'Upload Foto')}</span><input type="file" onChange={e => setImageFile(e.target.files?.[0] || null)} /></label>
               <div className="admin-checks">
                 <label className={`admin-toggle ${form.featured ? 'checked' : ''}`}>
