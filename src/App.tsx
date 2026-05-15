@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties, type KeyboardEvent } from 'react';
 import { ShoppingBag, Search, MapPin, Clock, Plus, Minus, X, Settings, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CategoryFilter } from './components/CategoryFilter';
 import { CheckoutModal } from './components/CheckoutModal';
@@ -108,7 +108,11 @@ function Storefront() {
     };
 
     if (supabaseProducts.length === 0) {
-      setDisplayImageSources({});
+      window.queueMicrotask(() => {
+        if (!cancelled) {
+          setDisplayImageSources({});
+        }
+      });
       return () => {
         cancelled = true;
       };
@@ -197,6 +201,13 @@ function Storefront() {
     setDetailQuantity(1);
   };
 
+  const handleProductCardKeyDown = (event: KeyboardEvent<HTMLElement>, product: Product) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openProductModal(product);
+    }
+  };
+
   const handleAddProductDetail = () => {
     if (!selectedProduct) return;
     addToCart(selectedProduct, detailQuantity);
@@ -218,7 +229,7 @@ function Storefront() {
   const handleCheckoutSubmit = (checkoutData: CheckoutData) => {
     if (cart.length === 0) return;
     const itemsMessage = cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
-    let deliveryInfo = checkoutData.deliveryMethod === 'delivery' 
+    const deliveryInfo = checkoutData.deliveryMethod === 'delivery'
       ? `*Entrega:* ${checkoutData.address}, nº ${checkoutData.number}, ${checkoutData.neighborhood}`
       : `*Retirada:* Retirada no estabelecimento`;
     let paymentInfo = `*Pagamento:* ${checkoutData.paymentMethod.toUpperCase()}`;
@@ -246,6 +257,7 @@ function Storefront() {
   const otherCategories = Object.keys(groupedProducts).filter(cat => !categoryOrder.includes(cat));
   const finalCategoryOrder = [...categoryOrder.filter(cat => groupedProducts[cat]), ...otherCategories];
   const filterCategories = ['Todos', 'Destaques', ...finalCategoryOrder];
+  const desktopToolbarCategories = filterCategories;
 
   const scrollToCategory = (category: string) => {
     setSelectedCategory(category);
@@ -299,6 +311,23 @@ function Storefront() {
             </div>
           </div>
 
+          <div className="desktop-toolbar">
+            <select
+              className="desktop-category-select"
+              value={selectedCategory}
+              onChange={(event) => scrollToCategory(event.target.value)}
+              aria-label="Selecionar categoria"
+            >
+              {desktopToolbarCategories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <div className="desktop-toolbar-search search-bar">
+              <Search size={20} />
+              <input type="text" placeholder="Busque por um produto" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            </div>
+          </div>
+
           <div className="controls-wrapper">
             <CategoryFilter selectedCategory={selectedCategory} onSelectCategory={scrollToCategory} categories={filterCategories} />
             <div className="search-bar">
@@ -348,11 +377,13 @@ function Storefront() {
                   <div className="featured-carousel-shell">
                     <div className="featured-carousel-track" ref={featuredCarouselRef}>
                       {filtered.map((product, index) => (
-                        <button
+                        <article
                           key={product.id}
                           className="product-card"
-                          type="button"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => openProductModal(product)}
+                          onKeyDown={(event) => handleProductCardKeyDown(event, product)}
                           style={{ '--card-index': index } as CSSProperties}
                         >
                           <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
@@ -376,18 +407,20 @@ function Storefront() {
                               <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
                             </div>
                           </div>
-                        </button>
+                        </article>
                       ))}
                     </div>
                   </div>
                 ) : (
                   <div className="products-grid">
                     {filtered.map((product, index) => (
-                      <button
+                      <article
                         key={product.id}
                         className="product-card"
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => openProductModal(product)}
+                        onKeyDown={(event) => handleProductCardKeyDown(event, product)}
                         style={{ '--card-index': index } as CSSProperties}
                       >
                         <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
@@ -411,7 +444,7 @@ function Storefront() {
                             <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
                           </div>
                         </div>
-                      </button>
+                      </article>
                     ))}
                   </div>
                 )}
