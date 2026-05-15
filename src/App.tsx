@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import { ShoppingBag, Search, MapPin, Clock, Plus, Minus, X, Settings, Loader2 } from 'lucide-react';
+import { ShoppingBag, Search, MapPin, Clock, Plus, Minus, X, Settings, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CategoryFilter } from './components/CategoryFilter';
 import { CheckoutModal } from './components/CheckoutModal';
 import { AdminPage } from './components/AdminPage';
@@ -70,7 +70,9 @@ function Storefront() {
   const [detailQuantity, setDetailQuantity] = useState(1);
   const [displayImageSources, setDisplayImageSources] = useState<Record<string, string>>({});
   const [cartFeedback, setCartFeedback] = useState<string | null>(null);
+  const [featuredCarouselState, setFeaturedCarouselState] = useState({ canScrollLeft: false, canScrollRight: false });
   const cartFeedbackTimeout = useRef<number | null>(null);
+  const featuredCarouselRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     localStorage.removeItem('sabores-do-campo-cart');
@@ -118,6 +120,33 @@ function Storefront() {
       cancelled = true;
     };
   }, [supabaseProducts]);
+
+  useEffect(() => {
+    const updateFeaturedCarouselState = () => {
+      const element = featuredCarouselRef.current;
+      if (!element) {
+        setFeaturedCarouselState({ canScrollLeft: false, canScrollRight: false });
+        return;
+      }
+
+      const maxScrollLeft = Math.max(0, element.scrollWidth - element.clientWidth);
+      setFeaturedCarouselState({
+        canScrollLeft: element.scrollLeft > 8,
+        canScrollRight: element.scrollLeft < maxScrollLeft - 8,
+      });
+    };
+
+    updateFeaturedCarouselState();
+    const element = featuredCarouselRef.current;
+
+    element?.addEventListener('scroll', updateFeaturedCarouselState, { passive: true });
+    window.addEventListener('resize', updateFeaturedCarouselState);
+
+    return () => {
+      element?.removeEventListener('scroll', updateFeaturedCarouselState);
+      window.removeEventListener('resize', updateFeaturedCarouselState);
+    };
+  }, [supabaseProducts, searchQuery]);
 
   // Agora usamos apenas os produtos vindos do Supabase
   const allProducts = supabaseProducts;
@@ -230,6 +259,16 @@ function Storefront() {
     }
   };
 
+  const scrollFeaturedCarousel = (direction: number) => {
+    const element = featuredCarouselRef.current;
+    if (!element) return;
+
+    const firstCard = element.querySelector<HTMLElement>('.product-card');
+    const gap = Number.parseFloat(window.getComputedStyle(element).gap || '0') || 0;
+    const cardWidth = firstCard?.offsetWidth ?? Math.max(260, element.clientWidth * 0.78);
+    element.scrollBy({ left: direction * (cardWidth + gap), behavior: 'smooth' });
+  };
+
   return (
     <div className="app-container">
       <nav className="top-nav">
@@ -276,41 +315,106 @@ function Storefront() {
             );
             if (filtered.length === 0) return null;
             return (
-              <section key={category} id={`category-${category}`} style={{ marginTop: '40px' }}>
-                <h2 className="section-heading">{category}</h2>
-                <div className="products-grid">
-                  {filtered.map((product, index) => (
-                    <button
-                      key={product.id}
-                      className="product-card"
-                      type="button"
-                      onClick={() => openProductModal(product)}
-                      style={{ '--card-index': index } as CSSProperties}
-                    >
-                      <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
-                      <div className="product-info">
-                        <h3>{product.name}</h3>
-                        <p className="product-description">{product.description}</p>
-                        <div className="product-footer">
-                          {(() => {
-                            const pricing = getProductPricing(product);
-                            return (
-                              <div className="product-price-group">
-                                {pricing.hasPromotion && (
-                                  <span className="product-price-old">{formatCurrency(pricing.originalPrice)}</span>
-                                )}
-                                <span className={`product-price ${pricing.hasPromotion ? 'product-price--promo' : ''}`}>
-                                  {formatCurrency(product.price)}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                          <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
-                        </div>
+              <section key={category} id={`category-${category}`} className={category === 'Destaques' ? 'featured-section' : ''} style={{ marginTop: '40px' }}>
+                <div className="section-heading-row">
+                  <h2 className="section-heading">{category}</h2>
+                  {category === 'Destaques' && filtered.length > 1 && (
+                    <div className="featured-carousel-actions">
+                      <span className="featured-carousel-hint">Deslize ou use as setas</span>
+                      <div className="featured-carousel-buttons">
+                        <button
+                          type="button"
+                          className="featured-carousel-button"
+                          onClick={() => scrollFeaturedCarousel(-1)}
+                          disabled={!featuredCarouselState.canScrollLeft}
+                          aria-label="Ver destaque anterior"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="featured-carousel-button"
+                          onClick={() => scrollFeaturedCarousel(1)}
+                          disabled={!featuredCarouselState.canScrollRight}
+                          aria-label="Ver próximo destaque"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
+                {category === 'Destaques' ? (
+                  <div className="featured-carousel-shell">
+                    <div className="featured-carousel-track" ref={featuredCarouselRef}>
+                      {filtered.map((product, index) => (
+                        <button
+                          key={product.id}
+                          className="product-card"
+                          type="button"
+                          onClick={() => openProductModal(product)}
+                          style={{ '--card-index': index } as CSSProperties}
+                        >
+                          <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
+                          <div className="product-info">
+                            <h3>{product.name}</h3>
+                            <p className="product-description">{product.description}</p>
+                            <div className="product-footer">
+                              {(() => {
+                                const pricing = getProductPricing(product);
+                                return (
+                                  <div className="product-price-group">
+                                    {pricing.hasPromotion && (
+                                      <span className="product-price-old">{formatCurrency(pricing.originalPrice)}</span>
+                                    )}
+                                    <span className={`product-price ${pricing.hasPromotion ? 'product-price--promo' : ''}`}>
+                                      {formatCurrency(product.price)}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+                              <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="products-grid">
+                    {filtered.map((product, index) => (
+                      <button
+                        key={product.id}
+                        className="product-card"
+                        type="button"
+                        onClick={() => openProductModal(product)}
+                        style={{ '--card-index': index } as CSSProperties}
+                      >
+                        <div className="product-image-container"><img src={displayImageSources[product.id] || product.image} alt={product.name} className="product-image" /></div>
+                        <div className="product-info">
+                          <h3>{product.name}</h3>
+                          <p className="product-description">{product.description}</p>
+                          <div className="product-footer">
+                            {(() => {
+                              const pricing = getProductPricing(product);
+                              return (
+                                <div className="product-price-group">
+                                  {pricing.hasPromotion && (
+                                    <span className="product-price-old">{formatCurrency(pricing.originalPrice)}</span>
+                                  )}
+                                  <span className={`product-price ${pricing.hasPromotion ? 'product-price--promo' : ''}`}>
+                                    {formatCurrency(product.price)}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                            <button className="add-btn" type="button" onClick={(event) => { event.stopPropagation(); addToCart(product); }}><Plus size={20} /></button>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </section>
             );
           })}

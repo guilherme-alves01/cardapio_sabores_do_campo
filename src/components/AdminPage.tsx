@@ -71,6 +71,7 @@ export function AdminPage() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<FeedbackType>('info');
@@ -81,6 +82,7 @@ export function AdminPage() {
     () => Array.from(new Set(products.map(product => product.category))).sort(),
     [products],
   );
+  const categorySelectValue = isCustomCategory ? '__custom__' : (categories.includes(form.category) ? form.category : '');
 
   const loadData = useCallback(async () => {
     try {
@@ -220,6 +222,7 @@ export function AdminPage() {
       active: product.active ?? true,
       sortOrder: (product.sort_order || 0).toString(),
     });
+    setIsCustomCategory(false);
     setImageFile(null);
     setMessage('');
     setMessageType('info');
@@ -229,6 +232,7 @@ export function AdminPage() {
   const handleCancelEdit = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setIsCustomCategory(false);
     setImageFile(null);
     setIsProductModalOpen(false);
   };
@@ -236,6 +240,7 @@ export function AdminPage() {
   const handleNewProductClick = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setIsCustomCategory(false);
     setImageFile(null);
     setMessage('');
     setMessageType('info');
@@ -514,30 +519,71 @@ export function AdminPage() {
               </button>
             </div>
             <div className="settings-modal-body">
-              <label>Nome<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></label>
-              <label>Categoria<input list="cats" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required /><datalist id="cats">{categories.map(c => <option key={c} value={c} />)}</datalist></label>
-              <label>Preço<input value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="19,90" required /></label>
-              <label>Descrição<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
-              <div className="admin-checks">
+              <div className="admin-form-grid">
+                <label className="admin-field admin-field--full">Nome<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></label>
+                <label className="admin-field">
+                  Categoria
+                  {categories.length > 0 ? (
+                    <>
+                      <select
+                        className="admin-select"
+                        value={categorySelectValue}
+                        onChange={e => {
+                          const value = e.target.value;
+                          if (value === '__custom__') {
+                            setIsCustomCategory(true);
+                            setForm({ ...form, category: '' });
+                          } else {
+                            setIsCustomCategory(false);
+                            setForm({ ...form, category: value });
+                          }
+                        }}
+                        aria-label="Selecionar categoria"
+                      >
+                        <option value="" disabled>Selecione uma categoria</option>
+                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        <option value="__custom__">Nova categoria...</option>
+                      </select>
+                      {isCustomCategory && (
+                        <input
+                          className="admin-category-custom"
+                          value={form.category}
+                          onChange={e => setForm({ ...form, category: e.target.value })}
+                          placeholder="Digite uma nova categoria"
+                          required
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="Digite uma categoria" required />
+                  )}
+                </label>
+                <label className="admin-field">Preço<input value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="19,90" required /></label>
+                <label className="admin-field admin-field--full">Descrição<textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
+                <div className="admin-checks admin-field--full">
                 <label className={`admin-toggle ${form.promotionActive ? 'checked' : ''}`}>
                   <input type="checkbox" checked={form.promotionActive} onChange={e => setForm({ ...form, promotionActive: e.target.checked })} />
                   <span>Promoção</span>
                   <strong>{form.promotionActive ? 'Sim' : 'Não'}</strong>
                 </label>
               </div>
-              <label>Preço promocional<input value={form.promotionPrice} onChange={e => setForm({ ...form, promotionPrice: e.target.value })} placeholder="14,90" disabled={!form.promotionActive} /></label>
-              <label className="admin-file-field">Imagem<span><Upload size={18} /> {imageFile ? imageFile.name : (editingId ? 'Trocar Foto' : 'Upload Foto')}</span><input type="file" onChange={e => setImageFile(e.target.files?.[0] || null)} /></label>
-              <div className="admin-checks">
-                <label className={`admin-toggle ${form.featured ? 'checked' : ''}`}>
-                  <input type="checkbox" checked={form.featured} onChange={e => setForm({ ...form, featured: e.target.checked })} />
-                  <span>Destaque</span>
-                  <strong>{form.featured ? 'Sim' : 'Não'}</strong>
-                </label>
-                <label className={`admin-toggle ${form.active ? 'checked' : ''}`}>
-                  <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} />
-                  <span>Ativo</span>
-                  <strong>{form.active ? 'Sim' : 'Não'}</strong>
-                </label>
+                {form.promotionActive && (
+                  <label className="admin-field admin-field--full admin-promo-field">Preço promocional<input value={form.promotionPrice} onChange={e => setForm({ ...form, promotionPrice: e.target.value })} placeholder="14,90" /></label>
+                )}
+                {!form.promotionActive && <p className="admin-smart-hint admin-field--full">Ative a promoção para informar um preço promocional.</p>}
+                <label className="admin-field admin-field--full admin-file-field">Imagem<span><Upload size={18} /> {imageFile ? imageFile.name : (editingId ? 'Trocar Foto' : 'Upload Foto')}</span><input type="file" onChange={e => setImageFile(e.target.files?.[0] || null)} /></label>
+                <div className="admin-checks admin-field--full">
+                  <label className={`admin-toggle ${form.featured ? 'checked' : ''}`}>
+                    <input type="checkbox" checked={form.featured} onChange={e => setForm({ ...form, featured: e.target.checked })} />
+                    <span>Destaque</span>
+                    <strong>{form.featured ? 'Sim' : 'Não'}</strong>
+                  </label>
+                  <label className={`admin-toggle ${form.active ? 'checked' : ''}`}>
+                    <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} />
+                    <span>Ativo</span>
+                    <strong>{form.active ? 'Sim' : 'Não'}</strong>
+                  </label>
+                </div>
               </div>
               {message && <p className={`admin-message ${messageType}`}>{message}</p>}
               <button className="admin-primary-btn" type="submit" disabled={isSaving}>
